@@ -11,9 +11,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(
@@ -45,14 +49,19 @@ public class IncidentApplicationTests {
 		}
 		awaitTerminationAfterShutdown(executorService);
 
-		System.out.println(incidentController.getIncidents().size());
+		List<Incident> actual = incidentController.getIncidents().stream()
+				.filter(i -> "Test concurrent create".equals(i.getName()))
+				.collect(Collectors.toList());
+
+		System.out.println(actual.size());
+		assertEquals(1, actual.size());
 
 	}
 
 	@Test
 	public void testConcurrentUpdates() throws URISyntaxException {
 		Incident incident = new Incident();
-		incident.setName("Test concurrent");
+		incident.setName("Test concurrent update");
 		incidentController.createIncident(incident);
 
 		int max = 10;
@@ -67,7 +76,13 @@ public class IncidentApplicationTests {
 		}
 		awaitTerminationAfterShutdown(executorService);
 
-		System.out.println(incidentController.getIncident(1L));
+		List<Incident> actual = incidentController.getIncidents().stream()
+				.filter(i -> "Test concurrent update".equals(i.getName()))
+				.collect(Collectors.toList());
+
+		assertEquals(1, actual.size());
+		System.out.println(actual.get(0));
+		assertEquals(0, actual.get(0).getUpdateCount());
 
 	}
 
