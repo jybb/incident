@@ -12,6 +12,7 @@ import org.example.incident.service.IncidentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -21,6 +22,8 @@ import java.util.List;
  */
 @Component
 public class IncidentServiceImpl implements IncidentService {
+    private static final int MAX_UPDATE_TIMES = 3;
+
     @Autowired
     private IncidentRepository incidentRepository;
 
@@ -43,15 +46,23 @@ public class IncidentServiceImpl implements IncidentService {
         if (!found.isEmpty()) {
             throw new DuplicatedIncidentException("duplicated name " + incident.getName());
         }
+        incident.setUpdateCount(MAX_UPDATE_TIMES);
         return incidentRepository.save(incident);
     }
 
     @Override
+    @Transactional
     public Incident update(Incident incident) {
-        Incident found = findById(incident.getId());
+        Incident found = incidentRepository.lockById(incident.getId());
+        if (found.getUpdateCount() > 0) {
+            found.setUpdateCount(found.getUpdateCount() - 1);
+        } else {
+            throw new RuntimeException("max update times");
+        }
         found.setName(incident.getName());
         found.setTime(incident.getTime());
         found.setAddress(incident.getAddress());
+        System.out.println("Update " + found);
         return incidentRepository.save(found);
     }
 

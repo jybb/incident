@@ -38,6 +38,11 @@ public class Incident {
      */
     private String address;
 
+    /**
+     * When count < 0, incident cannot be updated
+     */
+    private Integer updateCount;
+
     public Long getId() {
         return id;
     }
@@ -68,5 +73,24 @@ public class Incident {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public Integer getUpdateCount() {
+        return updateCount;
+    }
+
+    public void setUpdateCount(Integer updateCount) {
+        this.updateCount = updateCount;
+    }
+
+    @Override
+    public String toString() {
+        return "Incident{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", time=" + time +
+                ", address='" + address + '\'' +
+                ", updateCount=" + updateCount +
+                '}';
     }
 }
