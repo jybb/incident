@@ -9,6 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import java.time.Instant;
 import java.util.Date;
 
 /**
@@ -23,14 +24,19 @@ public class Incident {
     private Long id;
 
     /**
-     * 事件名称
+     * What's the incident
      */
     private String name;
 
     /**
-     * 发生的时间
+     * When it happened
      */
-    private Date happenTime;
+    private Date time;
+
+    /**
+     * Where it happened
+     */
+    private String address;
 
     public Long getId() {
         return id;
@@ -48,11 +54,19 @@ public class Incident {
         this.name = name;
     }
 
-    public Date getHappenTime() {
-        return happenTime;
+    public Date getTime() {
+        return time;
     }
 
-    public void setHappenTime(Date happenTime) {
-        this.happenTime = happenTime;
+    public void setTime(Date time) {
+        this.time = time;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 }

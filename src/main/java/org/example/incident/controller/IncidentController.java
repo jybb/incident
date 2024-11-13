@@ -6,6 +6,8 @@ package org.example.incident.controller;
 
 import org.example.incident.entity.Incident;
 import org.example.incident.repository.IncidentRepository;
+import org.example.incident.service.IncidentService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,42 +29,35 @@ import java.util.List;
 @RestController
 @RequestMapping("/incidents")
 public class IncidentController {
-
-    private final IncidentRepository incidentRepository;
-
-    public IncidentController(IncidentRepository incidentRepository) {
-        this.incidentRepository = incidentRepository;
-    }
+    @Autowired
+    private IncidentService incidentService;
 
     @GetMapping
     public List<Incident> getIncidents() {
-        return incidentRepository.findAll();
+        return incidentService.findAll();
     }
 
     @GetMapping("/{id}")
     public Incident getIncident(@PathVariable Long id) {
-        return incidentRepository.findById(id).orElseThrow(RuntimeException::new);
+        return incidentService.findById(id);
     }
 
-    @PostMapping("/create")
+    @PostMapping//("/create")
     public ResponseEntity createIncident(@RequestBody Incident incident) throws URISyntaxException {
-        Incident incidentSaved = incidentRepository.save(incident);
+        Incident incidentSaved = incidentService.create(incident);
         return ResponseEntity.created(new URI("/incidents/" + incidentSaved.getId())).body(incidentSaved);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity updateIncident(@PathVariable Long id, @RequestBody Incident incident) {
-        Incident currentIncident = incidentRepository.findById(id).orElseThrow(RuntimeException::new);
-        currentIncident.setName(incident.getName());
-        currentIncident.setHappenTime(incident.getHappenTime());
-        currentIncident = incidentRepository.save(incident);
-
-        return ResponseEntity.ok(currentIncident);
+        incident.setId(id);
+        incident = incidentService.update(incident);
+        return ResponseEntity.ok(incident);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity deleteIncident(@PathVariable Long id) {
-        incidentRepository.deleteById(id);
+        incidentService.deleteById(id);
         return ResponseEntity.ok().build();
     }
 }
