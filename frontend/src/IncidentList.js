@@ -56,7 +56,7 @@ class IncidentList extends Component {
                 <AppNavbar/>
                 <Container fluid>
                     <div className="float-right">
-                        <Button color="success" tag={Link} to="/incidents/new">Report Incident</Button>
+                        <Button color="success" tag={Link} to="/incidents/new">Add Incident</Button>
                     </div>
                     <h3>Incidents</h3>
                     <Table className="mt-4">

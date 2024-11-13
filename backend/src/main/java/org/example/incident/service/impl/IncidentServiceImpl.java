@@ -7,6 +7,7 @@ package org.example.incident.service.impl;
 import org.example.incident.entity.Incident;
 import org.example.incident.exception.DuplicatedIncidentException;
 import org.example.incident.exception.IncidentNotFoundException;
+import org.example.incident.exception.MaxUpdateTimesException;
 import org.example.incident.repository.IncidentRepository;
 import org.example.incident.service.IncidentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author jessica.jia
@@ -39,13 +41,7 @@ public class IncidentServiceImpl implements IncidentService {
 
     @Override
     public Incident create(Incident incident) {
-        Incident incidentByName = new Incident();
-        incidentByName.setName(incident.getName());
-        Example<Incident> byName = Example.of(incidentByName);
-        List<Incident> found = incidentRepository.findAll(byName);
-        if (!found.isEmpty()) {
-            throw new DuplicatedIncidentException("duplicated name " + incident.getName());
-        }
+        checkForUpdate(incident);
         incident.setUpdateCount(MAX_UPDATE_TIMES);
         return incidentRepository.save(incident);
     }
@@ -57,7 +53,10 @@ public class IncidentServiceImpl implements IncidentService {
         if (found.getUpdateCount() > 0) {
             found.setUpdateCount(found.getUpdateCount() - 1);
         } else {
-            throw new RuntimeException("max update times");
+            throw new MaxUpdateTimesException();
+        }
+        if (!Objects.equals(found.getName(), incident.getName())) {
+            checkForUpdate(incident);
         }
         found.setName(incident.getName());
         found.setTime(incident.getTime());
@@ -66,8 +65,19 @@ public class IncidentServiceImpl implements IncidentService {
         return incidentRepository.save(found);
     }
 
+    private void checkForUpdate(Incident incident) {
+        Incident incidentByName = new Incident();
+        incidentByName.setName(incident.getName());
+        Example<Incident> byName = Example.of(incidentByName);
+        List<Incident> found = incidentRepository.findAll(byName);
+        if (!found.isEmpty()) {
+            throw new DuplicatedIncidentException("duplicated name " + incident.getName());
+        }
+    }
+
     @Override
     public void deleteById(Long id) {
+        findById(id);
         incidentRepository.deleteById(id);
     }
 }

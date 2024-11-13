@@ -4,8 +4,9 @@
  */
 package org.example.incident.controller;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import org.example.incident.entity.Incident;
-import org.example.incident.repository.IncidentRepository;
 import org.example.incident.service.IncidentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -38,25 +39,29 @@ public class IncidentController {
     }
 
     @GetMapping("/{id}")
-    public Incident getIncident(@PathVariable Long id) {
+    public Incident getIncident(@PathVariable @Positive Long id) {
         return incidentService.findById(id);
     }
 
-    @PostMapping//("/create")
-    public ResponseEntity createIncident(@RequestBody Incident incident) throws URISyntaxException {
+    @PostMapping
+    public ResponseEntity createIncident(@RequestBody @Valid Incident incident) {
         Incident incidentSaved = incidentService.create(incident);
-        return ResponseEntity.created(new URI("/incidents/" + incidentSaved.getId())).body(incidentSaved);
+        try {
+            return ResponseEntity.created(new URI("/incidents/" + incidentSaved.getId())).body(incidentSaved);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity updateIncident(@PathVariable Long id, @RequestBody Incident incident) {
+    public ResponseEntity updateIncident(@PathVariable @Positive Long id, @RequestBody @Valid Incident incident) {
         incident.setId(id);
         incident = incidentService.update(incident);
         return ResponseEntity.ok(incident);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity deleteIncident(@PathVariable Long id) {
+    public ResponseEntity deleteIncident(@PathVariable @Positive Long id) {
         incidentService.deleteById(id);
         return ResponseEntity.ok().build();
     }

@@ -26,6 +26,30 @@ public class IncidentApplicationTests {
 	private IncidentController incidentController;
 
 	@Test
+	public void testConcurrentCreate() throws URISyntaxException {
+
+
+		int max = 10;
+		ExecutorService executorService = Executors.newFixedThreadPool(max);
+		for (int i=0; i<max; i++) {
+			int finalI = i;
+			executorService.submit(new Runnable() {
+				@Override
+				public void run() {
+					Incident incident = new Incident();
+					incident.setName("Test concurrent create");
+					incident.setAddress("A" + finalI);
+					incidentController.createIncident(incident);
+				}
+			});
+		}
+		awaitTerminationAfterShutdown(executorService);
+
+		System.out.println(incidentController.getIncidents().size());
+
+	}
+
+	@Test
 	public void testConcurrentUpdates() throws URISyntaxException {
 		Incident incident = new Incident();
 		incident.setName("Test concurrent");
