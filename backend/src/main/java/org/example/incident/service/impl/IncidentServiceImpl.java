@@ -41,7 +41,7 @@ public class IncidentServiceImpl implements IncidentService {
 
     @Override
     public Incident create(Incident incident) {
-        checkForUpdate(incident);
+        checkForDuplicate(incident);
         incident.setUpdateCount(MAX_UPDATE_TIMES);
         return incidentRepository.save(incident);
     }
@@ -56,7 +56,7 @@ public class IncidentServiceImpl implements IncidentService {
             throw new MaxUpdateTimesException();
         }
         if (!Objects.equals(found.getName(), incident.getName())) {
-            checkForUpdate(incident);
+            checkForDuplicate(incident);
         }
         found.setName(incident.getName());
         found.setTime(incident.getTime());
@@ -65,7 +65,7 @@ public class IncidentServiceImpl implements IncidentService {
         return incidentRepository.save(found);
     }
 
-    private void checkForUpdate(Incident incident) {
+    private void checkForDuplicate(Incident incident) {
         Incident incidentByName = new Incident();
         incidentByName.setName(incident.getName());
         Example<Incident> byName = Example.of(incidentByName);
